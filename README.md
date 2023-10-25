@@ -13,5 +13,9 @@ The issue with proprietary ranked choice voting systems is that there is no way 
 
 ## Implementation ##
 `$myelection = new RankedChoiceVote($votes,'No Endorsement',"Assemblymember",1);`
-`//constructor arguments: multi-dimensional array of the votes, the "protected candidates", name of office, number of winners`
 `$myelection ->conductElection();`
+The arguments for the constructor are as follows: 
+1. A multi-dimensional array of the votes with the first dimension being the individual ballot and the second dimension being the order of candidates
+2. The name of the "protected candidate" (e.g. "No Endorsement")
+3. The name of the office being sought,
+4. The number of winners

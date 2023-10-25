@@ -12,7 +12,7 @@ class RankedChoiceVote {
 		Remove the found candidate from all of the ballots (i.e. every candidate goes up one rank)
 		Continue the process until the number of winners or number of remaining candidates equals the number of maximum winners
 	*/
-	
+
 	private $votes = array(); // input multidimensional array of all of the votes
 	private $protected_candidate; // if there is a candidate that must be saved round to round, this is where to save it
 	private $rounds = 1; // counter for number of rounds it has taken to run
@@ -20,6 +20,7 @@ class RankedChoiceVote {
 	private $numofWinners; // number of people that can be elected
 	private $winnerExists = false; // boolean for if a winner has been found
 	private $winnerName = []; // array storing the name(s) of the winner(s)
+	private $numOfSpotsToFill; // number of remaining spots
 
 	// constructor function
 	// return: void
@@ -28,6 +29,7 @@ class RankedChoiceVote {
 		$this->protected_candidate = $protected_candidate; // candidate that 
 		$this->electionName = $electionName;
 		$this->numofWinners = $numofWinners;
+		$this->numOfSpotsToFill = $numofWinners;
     }
 	
 	// function for telling if there is a winner
@@ -202,6 +204,18 @@ class RankedChoiceVote {
 		return $arrayLen;
 	}
 	
+	// function to get the number of spots left
+	// return: int
+	private function getNumberOfSpotsToFill(){
+		return $this->numOfSpotsToFill;
+	}
+	
+	// function to reduce number of spots left by 1
+	// return: void
+	private function reduceNumberOfRemainingSpotsByOne(){
+		$this->numOfSpotsToFill--;
+	}
+	
 	// function for if we are in the last round before figuring out who won
 	// return: string
 	private function finalCandidatesRound($array){
@@ -233,16 +247,6 @@ class RankedChoiceVote {
 		echo $candidateToRemove . " was eliminated<br />\r\n\r\n";
 	}
 	
-	// function for inputting the remaining candidates (i.e. the winners) into the winners list
-	// return: void
-	private function finalRound(){
-		$winner = $this->findUniqueVotesLeft();
-		for($i=0;$i<sizeof($winner); $i++){
-			$this->addWinner($winner[$i]);
-		}
-		$this->winnerExists = true;
-	}
-	
 	// function to increment the number of rounds
 	// return: void;
 	private function increaseRound(){
@@ -256,28 +260,10 @@ class RankedChoiceVote {
 		return sizeof($candidateList);
 	}
 	
-	// function for printing the tally for the last round
-	// return: void
-	private function printTallyLastRound($array){
-		$votecount = array();
-		$firstRow = $this->getFirstItemInEachDimension($array);
-		foreach ($firstRow as $candidate) {
-			if(!array_key_exists($candidate,$votecount))
-			{
-				$votecount[$candidate] = 1;
-			}
-			else{
-				$votecount[$candidate]++;
-			}
-		}
-		asort($votecount);
-		echo $this->printTally($votecount);
-	}
-	
 	// function to see if the top vote-getter is over the threshhold of votes; if so, remove from the list
-	// return: bool
+	// return: array
 	private function seeIfTopVoteGetterIsOverWinNum($array){
-		$returnVal = false;
+		$returnArray = array();
 		$votecount = array();
 		$firstRow = $this->getFirstItemInEachDimension($array);
 		foreach ($firstRow as $candidate) {
@@ -291,90 +277,75 @@ class RankedChoiceVote {
 		}
 		asort($votecount);
 		$votecount = array_reverse($votecount);
-		$outputString = "";
 		$voteCountOutput = "";
 		foreach ($votecount as $key => $value) {
 			$voteCountOutput .= $key . ": " . $value . " votes<br />\r\n";
 			if($value >= $this->getWinNumber())
 			{
-				$this->addWinner($key);
-				$this->removeCandidate($this->votes, $key);
-				$outputString .= $key . " has passed the threshhold of ". $this->getWinNumber() . " votes and will be removed from contention<br />\r\n\r\n";
-				$returnVal = true;
+				array_push($returnArray,$key);
 			}
 			
 		}
-		if($returnVal){
+		if(sizeof($returnArray)>0){
 			echo $voteCountOutput;
 		}
-		echo $outputString;
-		return $returnVal;
-	}
-	
-	// function to know if all of the winner spots are occupied (i.e. if we have to keep going)
-	// return: bool
-	private function haveAllAvailibleSpotsBeenFilled(){
-		$returnVal = false;
-		if($this->getNumOfWinners() == $this->getNumberOfConfirmedWinners())
-			{
-				$returnVal = true;
-				$this->winnerExists = true;
-			}	
+		return $returnArray;
 	}
 	
 	// function for conducting the election
 	// return: void
 	public function conductElection(){
 		echo "<h2>" . $this->electionName . "</h2>\r\n";
-		echo "<h2>Number of winners: " . $this->getNumOfWinners() . "</h2>\r\n\r\n";
+		echo "<h2>Number of winners: " . $this->getNumOfWinners() . "</h2>\r\n";
 		echo "<h2>Win Number: " . $this->getWinNumber() . "</h2>\r\n\r\n";
-		
-		while($this->haveAllAvailibleSpotsBeenFilled()==false)
+		while($this->getNumberOfSpotsToFill()>0)
 		{
-			if($this->findNumOfUniqueVotesLeft()-1 == $this->getNumOfWinners()){
-				echo "<h3>Round ". $this->rounds."</h3>\r\n";
-				echo "Num of candidates left: " . $this->findNumOfUniqueVotesLeft() . "\r\n";
-				$candidateToRemove = $this->finalCandidatesRound($this->votes);
-				$this->removeCandidate($this->votes, $candidateToRemove);
-				echo $candidateToRemove . " was eliminated<br />\r\n\r\n";
-				$this->winnerExists = true;
-
-				$winners=$this->findUniqueVotesLeft();
-				for($i=0;$i<sizeof($winners);$i++){
-					$this->addWinner($winners[$i]);
+			echo "<h3>Round ". $this->rounds."</h3>\r\n";
+			echo "Num of candidates left: " . $this->findNumOfUniqueVotesLeft() . "\r\n";
+			$candidateOverThreshold = $this->seeIfTopVoteGetterIsOverWinNum($this->votes);
+			// if candidate is over the win number, remove from the list
+			if(sizeof($candidateOverThreshold)>0){
+				
+				for($i=0; $i<sizeof($candidateOverThreshold);$i++){
+					$this->addWinner($candidateOverThreshold[$i]);
+					$this->removeCandidate($this->votes,$candidateOverThreshold[$i]);
+					$this->reduceNumberOfRemainingSpotsByOne();
+					echo $candidateOverThreshold[$i] . " has passed the threshhold of ". $this->getWinNumber() . " votes and will be removed from contention<br />\r\n";
+					echo "Spots remaining: " . $this->getNumberOfSpotsToFill() . "<br />\r\n\r\n";
 				}
-				break;
+			}
+			// if we're down to the final candidates, find the one with the higher of the two
+			elseif($this->numOfCandidatesLeft()-1 == $this->getNumberOfSpotsToFill()){
+				$winner = $this->finalCandidatesRound($this->votes);
+				$this->addWinner($winner);
+				$this->removeCandidate($this->votes,$winner);
+				$this->reduceNumberOfRemainingSpotsByOne();
+				echo $winner . " wins last round and is a winner<br />\r\n";
 			}
 			else{
-				echo "<h3>Round ". $this->rounds."</h3>\r\n";
-				echo "Num of candidates left: " . $this->findNumOfUniqueVotesLeft() . "\r\n";
-				$topVoteRound = $this->seeIfTopVoteGetterIsOverWinNum($this->votes);
-				if(!$topVoteRound)
-				{
-					$this->conductRound();
-					$this->increaseRound();
-				}
-				else{
-					$this->winnerExists = true;
-					break;
-				}
+				$this->conductRound();				
 			}
+			$this->increaseRound();
 		}
-		$winnerList = $this->getWinner();
-		if(sizeof($winnerList)==1){
-			echo "<p><strong>". $winnerList[0] . " is elected as ". $this->getElectionName() ."</strong></p>";
-		}
-		else{
-			echo "<p><strong>";
-			for($x = 0; $x < sizeof($winnerList); $x++){
-				if($x == sizeof($winnerList)-1){
-					echo $winnerList[$x];
-				}
-				else{
-					echo $winnerList[$x] . ", ";
-				}
+		if($this->getNumberOfSpotsToFill() == 0){
+			$this->winnerExists = true;
+			$winnerList = $this->getWinner();
+			if(sizeof($winnerList)==1){
+				echo "<p><strong>". $winnerList[0] . " is elected as ". $this->getElectionName() ."</strong></p>";
 			}
-			echo " are elected as ". $this->getElectionName() ."</strong></p>";
+			else{
+				echo "<p><strong>";
+				for($x = 0; $x < sizeof($winnerList); $x++){
+					if($x == sizeof($winnerList)-1){
+						echo $winnerList[$x];
+					}
+					else{
+						echo $winnerList[$x] . ", ";
+					}
+				}
+				echo " are elected as ". $this->getElectionName() ."</strong></p>";
+			}
 		}
 	}
+		
 }

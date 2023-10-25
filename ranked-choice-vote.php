@@ -1,5 +1,5 @@
 <?php
-/* Ranked Choice Voting by Seamus Campbell (seamus@seamuscampbell.nyc) */
+/* Ranked Choice Voting by Seamus Campbell (seamus@seamuscampbell.nyc) with assistance from ChatGPT */
 
 class RankedChoiceVote {
 	/*

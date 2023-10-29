@@ -327,7 +327,7 @@ class RankedChoiceVote {
 		while($this->getNumberOfSpotsToFill()>0)
 		{
 			echo "<h3>Round ". $this->rounds."</h3>\r\n";
-			echo "Num of candidates left: " . $this->findNumOfUniqueVotesLeft() . "\r\n";
+			echo "Num of candidates left: " . $this->findNumOfUniqueVotesLeft() . "<br />\r\n";
 			$candidateOverThreshold = $this->seeIfTopVoteGetterIsOverWinNum($this->votes);
 			// if candidate is over the win number, remove from the list
 			if(sizeof($candidateOverThreshold)>0){

@@ -8,8 +8,9 @@ The issue with proprietary ranked choice voting systems is that there is no way 
 - If a candidate passes the win number (simple majority), remove them from contention
 - If the number of spots for winning candidates is full, stop
 - Otherwise, order the rankings and find the candidate with the fewest number of votes BUT if there is a "protected candidate" (e.g. "No Endorsement"), find the candidate with the second-fewest votes
-- Remove the found candidate from all of the ballots (i.e. every candidate goes up one rank)
+- Remove the candidate with the fewest votes from all of the ballots (i.e. every candidate goes up one rank)
 - Continue the process until the number of winners or number of remaining candidates equals the number of maximum winners
+- If the round has only two candidates left, declare the candidate with the most votes in that round the winner
 
 ## Implementation ##
 `$myelection = new RankedChoiceVote($votes,'No Endorsement',"Assemblymember",1);`

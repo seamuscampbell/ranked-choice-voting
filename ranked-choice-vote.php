@@ -126,8 +126,8 @@ class RankedChoiceVote {
 	// arguments: array (2 dimensional), string
 	private function getCandidateWithFewest($array, $skip){
 		$votecount = array();
-		$firstRow = $this->getFirstItemInEachDimension($array);
-		foreach ($firstRow as $candidate) {
+		$firstColumn = $this->getFirstItemInEachDimension($array);
+		foreach ($firstColumn as $candidate) {
 			if(!array_key_exists($candidate,$votecount))
 			{
 				$votecount[$candidate] = 1;
@@ -144,6 +144,46 @@ class RankedChoiceVote {
 			$fewest = $this->getKeyOfSecondToLastItem($votecount);
 		}
 		return $fewest;
+	}
+	
+	// function to search through the first item in each ballot (ballot = 1st dimension of the array) and find the person who got the most votes
+	// return: string
+	// arguments: array (2 dimensional)
+	private function getCandidateWithMost($array){
+		$votecount = array();
+		$firstColumn = $this->getFirstItemInEachDimension($array);
+		foreach ($firstColumn as $candidate) {
+			if(!array_key_exists($candidate,$votecount))
+			{
+				$votecount[$candidate] = 1;
+			}
+			else{
+				$votecount[$candidate]++;
+			}
+		}
+		asort($votecount);
+		$votecount = array_reverse($votecount);
+		$most = array_key_first($votecount);
+		return $most;
+	}
+	
+	// function to see if there are two candidates running in this round
+	// return: int
+	// arguments: array (2 dimensional)
+	private function getNumOfCandidatesInRound($array){
+		$votecount = array();
+		$firstColumn = $this->getFirstItemInEachDimension($array);
+		foreach ($firstColumn as $candidate) {
+			if(!array_key_exists($candidate,$votecount))
+			{
+				$votecount[$candidate] = 1;
+			}
+			else{
+				$votecount[$candidate]++;
+			}
+		}
+		$numOfCandidates = sizeof($votecount);
+		return $numOfCandidates;
 	}
 	
 	// if there is a candidate that cannot be removed, get the candidate with the second fewest number of votes
@@ -183,9 +223,9 @@ class RankedChoiceVote {
 		$array = array_values($array);
 	}
 	
-	// function for getting the first item in the first dimension of the array (i.e. the list of candidates from that round)
-	// return: array
-	// arguments: array (1 dimensional)
+	// function for getting the first item in the first dimension of each element the array (i.e. the list of candidates from that round)
+	// return: array (1 dimensional)
+	// arguments: array (2 dimensional)
 	private function getFirstItemInEachDimension($array) {
 		$firstItems = array();
 		foreach ($array as $subArray) {
@@ -241,8 +281,8 @@ class RankedChoiceVote {
 	// arguments: array (2 dimensional)
 	private function finalCandidatesRound($array){
 		$votecount = array();
-		$firstRow = $this->getFirstItemInEachDimension($array);
-		foreach ($firstRow as $candidate) {
+		$firstColumn = $this->getFirstItemInEachDimension($array);
+		foreach ($firstColumn as $candidate) {
 			if(!array_key_exists($candidate,$votecount))
 			{
 				$votecount[$candidate] = 1;
@@ -260,13 +300,23 @@ class RankedChoiceVote {
 		return $fewest;
 	}
 	
-	// function for determining who got the fewest votes and removing them from all ballots
+	// function for determining who got the fewest votes and removing them from all ballots; if only two are competing in the round, remove the lowest
 	// return: void
 	// arguments: none
 	private function conductRound(){
-		$candidateToRemove = $this->getCandidateWithFewest($this->votes,$this->protected_candidate);
+		if($this->getNumOfCandidatesInRound($this->votes) == 2){
+			$candidateToRemove = $this->getCandidateWithFewest($this->votes,"Name of a candidate that does not exist");
+			$candidateThatWonRound = $this->getCandidateWithMost($this->votes);
+			$this->addWinner($candidateThatWonRound);
+			$this->reduceNumberOfRemainingSpotsByOne();
+			echo $candidateToRemove . " was eliminated<br />\r\n";
+			echo $candidateThatWonRound . " won round<br />\r\n\r\n";
+		}
+		else{		
+			$candidateToRemove = $this->getCandidateWithFewest($this->votes,$this->protected_candidate);
+			echo $candidateToRemove . " was eliminated<br />\r\n\r\n";
+		}
 		$this->removeCandidate($this->votes, $candidateToRemove);
-		echo $candidateToRemove . " was eliminated<br />\r\n\r\n";
 	}
 	
 	// function to increment the number of rounds
@@ -290,8 +340,8 @@ class RankedChoiceVote {
 	private function seeIfTopVoteGetterIsOverWinNum($array){
 		$returnArray = array();
 		$votecount = array();
-		$firstRow = $this->getFirstItemInEachDimension($array);
-		foreach ($firstRow as $candidate) {
+		$firstColumn = $this->getFirstItemInEachDimension($array);
+		foreach ($firstColumn as $candidate) {
 			if(!array_key_exists($candidate,$votecount))
 			{
 				$votecount[$candidate] = 1;
@@ -309,7 +359,6 @@ class RankedChoiceVote {
 			{
 				array_push($returnArray,$key);
 			}
-			
 		}
 		if(sizeof($returnArray)>0){
 			echo $voteCountOutput;
@@ -327,7 +376,7 @@ class RankedChoiceVote {
 		while($this->getNumberOfSpotsToFill()>0)
 		{
 			echo "<h3>Round ". $this->rounds."</h3>\r\n";
-			echo "Num of candidates left: " . $this->findNumOfUniqueVotesLeft() . "<br />\r\n";
+			echo "Number of candidates left: " . $this->findNumOfUniqueVotesLeft() . "<br />\r\n";
 			$candidateOverThreshold = $this->seeIfTopVoteGetterIsOverWinNum($this->votes);
 			// if candidate is over the win number, remove from the list
 			if(sizeof($candidateOverThreshold)>0){

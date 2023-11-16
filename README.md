@@ -20,3 +20,6 @@ The arguments for the constructor are as follows:
 2. The name of the "protected candidate" (e.g. "No Endorsement")
 3. The name of the office being sought,
 4. The number of winners
+
+## License ##
+[Ranked Choice Voting](https://github.com/seamuscampbell/ranked-choice-voting/) by [Seamus Campbell](https://portfolio.seamuscampbell.nyc) is licensed under [Attribution-ShareAlike 4.0 International![](https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1)![](https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1)![](https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1)](http://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1)

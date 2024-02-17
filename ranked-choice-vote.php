@@ -85,6 +85,16 @@ class RankedChoiceVote {
 		return $uniqueValues;
 	}
 	
+	// functtion to remove spoiled ballots
+	// return: void
+	// arguments: array
+	private function removeBlankArrays($array) {
+		$tempArray = array_filter($array, function($subArray) {
+			return !empty($subArray);
+		});
+		$this->votes = $tempArray;
+	}
+	
 	// function for number of pople whp voted
 	// return: int
 	// arguments: none
@@ -262,6 +272,13 @@ class RankedChoiceVote {
 		return $arrayLen;
 	}
 	
+	// function to recalculate win number to account for spoiled ballots
+	// return: void
+	// arguments: none
+	private function recountWinNum(){
+		
+	}
+	
 	// function to get the number of spots left
 	// return: int
 	// arguments: none
@@ -400,6 +417,7 @@ class RankedChoiceVote {
 			else{
 				$this->conductRound();				
 			}
+			$this->removeBlankArrays($this->votes);
 			$this->increaseRound();
 		}
 		if($this->getNumberOfSpotsToFill() == 0){

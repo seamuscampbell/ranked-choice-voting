@@ -26,12 +26,24 @@ class RankedChoiceVote {
 	// return: void
 	// arguments: array (2 dimensional), string, string, int
 	public function __construct($votes, $protected_candidate, $electionName, $numofWinners){ 
-        $this->votes = $votes; // input array of the votes
+        	if(!is_array($votes)){
+			throw new Exception("Parameter 1 (votes array) is not of type array; " . gettype($votes) . " given");
+		}
+		if(!is_string($protected_candidate)){
+			throw new Exception("Parameter 2 (protected candidate) is not of type string; " . gettype($protected_candidate) . " given");
+		}
+		if(!is_string($electionName)){
+			throw new Exception("Parameter 3 (election name) is not of type string; " . gettype($electionName) . " given");
+		}
+		if(!is_int($numofWinners)){
+			throw new Exception("Parameter 4 (number of winners) is not of type integer; " . gettype($numofWinners) . " given");
+		}
+		$this->votes = $votes; // input array of the votes
 		$this->protected_candidate = $protected_candidate; // candidate that cannot be eliminated between rounds
 		$this->electionName = $electionName; // name of the office being sought
 		$this->numofWinners = $numofWinners; // number of people who can win
 		$this->numOfSpotsToFill = $numofWinners; // number of spots left to fill
-    }
+    	}
 	
 	// function for telling if there is a winner
 	// return: bool

@@ -388,6 +388,49 @@ class RankedChoiceVote {
 		return $returnArray;
 	}
 	
+	// function to handle situation where, in the end, the protected candidate is in last place
+	// return: bool
+	// arguments: array
+	private function protectedCandidateInLastAtEnd($array): bool {
+	
+		// Only use this function in the edge case since it happens only when there are 2 or more winners
+		if(($this->numOfCandidatesLeft() == $this->getNumberOfSpotsToFill()+1) && $this->numofWinners > 1)
+		{
+			// do a dummy round and see who came in last
+			$votecount = array();
+			$firstColumn = $this->getFirstItemInEachDimension($array);
+			foreach ($firstColumn as $candidate) {
+				if(!array_key_exists($candidate,$votecount))
+				{
+					$votecount[$candidate] = 1;
+				}
+				else{
+					$votecount[$candidate]++;
+				}
+			}
+			asort($votecount);
+			$votecount = array_reverse($votecount);
+			
+			foreach ($votecount as $key => $value) {
+				echo $key . ": " . $value . " votes<br />\r\n";
+			}
+			
+			$fewest = array_key_last($votecount);
+			
+			// the protected candidate is the one in last, that's the one to remove
+			if($fewest == $this->protected_candidate)
+			{
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+		else{
+			return false;
+		}
+	}
+	
 	// function for conducting the election
 	// return: void
 	// arguments: none
@@ -411,6 +454,13 @@ class RankedChoiceVote {
 					echo "Spots remaining: " . $this->getNumberOfSpotsToFill() . "<br />\r\n\r\n";
 				}
 			}
+			
+			// handle special case where the protected candidate is in last
+			elseif($this->protectedCandidateInLastAtEnd($this->votes)){
+				echo $this->protected_candidate . " is in last place and will be removed from contention<br />\r\n\r\n";
+				$this->removeCandidate($this->votes,$this->protected_candidate);
+			}
+			
 			// if we're down to the final candidates, find the one with the higher of the two
 			elseif($this->numOfCandidatesLeft()-1 == $this->getNumberOfSpotsToFill()){
 				$winner = $this->finalCandidatesRound($this->votes);

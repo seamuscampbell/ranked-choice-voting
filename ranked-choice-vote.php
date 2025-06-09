@@ -479,7 +479,7 @@ class RankedChoiceVote {
 			$this->winnerExists = true;
 			$winnerList = $this->getWinner();
 			if(sizeof($winnerList)==1){
-				echo "<p><strong>". $winnerList[0] . " is elected as ". $this->getElectionName() ."</strong></p>";
+				echo "<p><strong>". $winnerList[0] . " is elected as ". $this->getElectionName() ."</strong></p>\r\n";
 			}
 			else{
 				echo "<p><strong>";
@@ -491,7 +491,7 @@ class RankedChoiceVote {
 						echo $winnerList[$x] . ", ";
 					}
 				}
-				echo " are elected as ". $this->getElectionName() ."</strong></p>";
+				echo " are elected as ". $this->getElectionName() ."</strong></p>\r\n";
 			}
 		}
 	}

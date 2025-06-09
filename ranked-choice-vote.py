@@ -480,5 +480,5 @@ class RankedChoiceVote:
                         print(winner_list[x], end='')
                     else:
                         print(f"{winner_list[x]}, ", end='')
-                print(f" are elected as {self.get_election_name()}</strong></p>", end='')
+                print(f" are elected as {self.get_election_name()}</strong></p>\r\n", end='')
 

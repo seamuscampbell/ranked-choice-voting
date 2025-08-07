@@ -8,9 +8,9 @@ class RankedChoiceVote {
 		After each round, see who has the most votes at the front of their rankings
 		If a candidate passes the win number (simple majority), remove them from contention
 		If the number of spots for winning candidates is full, stop
-		Otherwise, order the rankings and find the candidate with the fewest number of votes BUT if there is a "protected candidate" (e.g. "No Endorsement"), find the candidate with the second-fewest votes
-		Remove the found candidate from all of the ballots (i.e. every candidate goes up one rank)
-		Continue the process until the number of winners or number of remaining candidates equals the number of maximum winners
+		Otherwise, order the rankings and find the candidate with the fewest number of votes, BUT if there is a "protected candidate" (e.g., "No Endorsement"), find the candidate with the second-fewest votes
+		Remove the found candidate from all of the ballots (i.e,. every candidate goes up one rank)
+		Continue the process until the number of winners or the  number of remaining candidates equals the maximum number of winners
 	*/
 
 	private $votes = array(); // input multidimensional array of all of the votes (2-dimensional array)
@@ -24,8 +24,8 @@ class RankedChoiceVote {
 
 	// constructor function
 	// return: void
-	// arguments: array (2 dimensional), string, string, int
-	public function __construct($votes, $protected_candidate, $electionName, $numofWinners){ 
+	// arguments: array (2-dimensional), string, string, int
+	public function __construct(array $votes, string $protected_candidate, string $electionName, int $numofWinners){ 
         	if(!is_array($votes)){
 			throw new Exception("Parameter 1 (votes array) is not of type array; " . gettype($votes) . " given");
 		}
@@ -83,7 +83,7 @@ class RankedChoiceVote {
 	// function for outputting a list of all of the candidates
 	// return: array
 	// arguments: array
-	public function getCandidateList($array): array{
+	public function getCandidateList(array $array): array{
 		$uniqueValues = array();
 		foreach ($array as $value) {
 			if (is_array($value)) {
@@ -100,7 +100,7 @@ class RankedChoiceVote {
 	// function to remove spoiled ballots
 	// return: void
 	// arguments: array
-	private function removeBlankArrays($array): void{
+	private function removeBlankArrays(array $array): void{
 		$tempArray = array_filter($array, function($subArray) {
 			return !empty($subArray);
 		});
@@ -117,7 +117,7 @@ class RankedChoiceVote {
 	// function to help determine win number
 	// return: bool
 	// arguments: int
-	private function isEven($number): bool{ 
+	private function isEven(int $number): bool{ 
 		if($number % 2 == 0){ 
 			return true; 
 		} 
@@ -145,8 +145,8 @@ class RankedChoiceVote {
 	
 	// function to search through the first item in each ballot (ballot = 1st dimension of the array) and find the person who got the fewest votes
 	// return: string
-	// arguments: array (2 dimensional), string
-	private function getCandidateWithFewest($array, $skip): string{
+	// arguments: array (2-dimensional), string
+	private function getCandidateWithFewest(array $array, string $skip): string{
 		$votecount = array();
 		$firstColumn = $this->getFirstItemInEachDimension($array);
 		foreach ($firstColumn as $candidate) {
@@ -170,8 +170,8 @@ class RankedChoiceVote {
 	
 	// function to search through the first item in each ballot (ballot = 1st dimension of the array) and find the person who got the most votes
 	// return: string
-	// arguments: array (2 dimensional)
-	private function getCandidateWithMost($array): string{
+	// arguments: array (2-dimensional)
+	private function getCandidateWithMost(array $array): string{
 		$votecount = array();
 		$firstColumn = $this->getFirstItemInEachDimension($array);
 		foreach ($firstColumn as $candidate) {
@@ -191,8 +191,8 @@ class RankedChoiceVote {
 	
 	// function to see if there are two candidates running in this round
 	// return: int
-	// arguments: array (2 dimensional)
-	private function getNumOfCandidatesInRound($array): int{
+	// arguments: array (2-dimensional)
+	private function getNumOfCandidatesInRound(array $array): int{
 		$votecount = array();
 		$firstColumn = $this->getFirstItemInEachDimension($array);
 		foreach ($firstColumn as $candidate) {
@@ -210,8 +210,8 @@ class RankedChoiceVote {
 	
 	// if there is a candidate that cannot be removed, get the candidate with the second-fewest number of votes
 	// return: string
-	// arguments: array (1 dimensional)
-	private function getKeyOfSecondToLastItem($array): string{
+	// arguments: array (1-dimensional)
+	private function getKeyOfSecondToLastItem(array $array): string{
 		$keys = array_keys($array);
 		if (count($keys) >= 2) {
 			$secondToLastKey = $keys[count($keys) - 2];
@@ -223,8 +223,8 @@ class RankedChoiceVote {
 
 	// function for seeing how many votes each person got in that round
 	// return: void
-	// arguments: array (1 dimensional)
-	private function printTally($array): void{
+	// arguments: array (1-dimensional)
+	private function printTally(array $array): void{
 		$array = array_reverse($array);
 		foreach($array as $key => $value) {
 			echo $key . ": " . $value . " votes<br />\r\n";
@@ -233,8 +233,8 @@ class RankedChoiceVote {
 	
 	// function to remove the person from the entire array
 	// return: void
-	// arguments: array (2 dimensional), string
-	private function removeCandidate(&$array, $search): void{
+	// arguments: array (2-dimensional), string
+	private function removeCandidate(array &$array, string $search): void{
 		foreach ($array as $key => &$value) {
 			if (is_array($value)) {
 				$this->removeCandidate($value, $search);
@@ -245,10 +245,10 @@ class RankedChoiceVote {
 		$array = array_values($array);
 	}
 	
-	// function for getting the first item in the first dimension of each element of the array (i.e. the list of candidates from that round)
-	// return: array (1 dimensional)
-	// arguments: array (2 dimensional)
-	private function getFirstItemInEachDimension($array): array{
+	// function for getting the first item in the first dimension of each element of the array (i.e., the list of candidates from that round)
+	// return: array (1-dimensional)
+	// arguments: array (2-dimensional)
+	private function getFirstItemInEachDimension(array $array): array{
 		$firstItems = array();
 		foreach ($array as $subArray) {
 			if (is_array($subArray) && count($subArray) > 0) {
@@ -261,7 +261,7 @@ class RankedChoiceVote {
 	// function for adding a winner to the winner array
 	// return: void
 	// arguments: string
-	private function addWinner($winner): void{
+	private function addWinner(string $winner): void{
 		$this->winnerName[] = $winner;
 	}
 	
@@ -275,7 +275,7 @@ class RankedChoiceVote {
 		return $uniqueItems;
 	}
 	
-	// function to get number of candidates left in the race
+	// function to get the number of candidates left in the race
 	// return: int
 	// arguments: none
 	private function findNumOfUniqueVotesLeft(): int{
@@ -300,8 +300,8 @@ class RankedChoiceVote {
 	
 	// function for if we are in the last round before figuring out who won
 	// return: string
-	// arguments: array (2 dimensional)
-	private function finalCandidatesRound($array): string{
+	// arguments: array (2-dimensional)
+	private function finalCandidatesRound(array $array): string{
 		$votecount = array();
 		$firstColumn = $this->getFirstItemInEachDimension($array);
 		foreach ($firstColumn as $candidate) {
@@ -348,7 +348,7 @@ class RankedChoiceVote {
 		$this->rounds++;
 	}
 	
-	// function for getting number of candidates that have yet to be eliminated
+	// function for getting the number of candidates that have yet to be eliminated
 	// return: int
 	// arguments: none
 	private function numOfCandidatesLeft(): int{
@@ -358,8 +358,8 @@ class RankedChoiceVote {
 	
 	// function to see if the top vote-getter is over the threshold of votes; if so, remove them from the list
 	// return: array
-	// arguments: array (2 dimensional)
-	private function seeIfTopVoteGetterIsOverWinNum($array): array{
+	// arguments: array (2-dimensional)
+	private function seeIfTopVoteGetterIsOverWinNum(array $array): array{
 		$returnArray = array();
 		$votecount = array();
 		$firstColumn = $this->getFirstItemInEachDimension($array);
@@ -388,10 +388,10 @@ class RankedChoiceVote {
 		return $returnArray;
 	}
 	
-	// function to handle situation where, in the end, the protected candidate is in last place
+	// function to handle the situation where, in the end, the protected candidate is in last place
 	// return: bool
 	// arguments: array
-	private function protectedCandidateInLastAtEnd($array): bool {
+	private function protectedCandidateInLastAtEnd(array $array): bool {
 	
 		// Only use this function in the edge case since it happens only when there are 2 or more winners
 		if(($this->numOfCandidatesLeft() == $this->getNumberOfSpotsToFill()+1) && $this->numofWinners > 1)

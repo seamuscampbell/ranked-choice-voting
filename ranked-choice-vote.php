@@ -83,12 +83,12 @@ class RankedChoiceVote {
 	// function for outputting a list of all of the candidates
 	// return: array
 	// arguments: array
-	public function getCandidateList(array $array): array{
+	public function ateList(array $array): array{
 		$uniqueValues = array();
 		foreach ($array as $value) {
 			if (is_array($value)) {
 				// If the element is an array, recursively call the function
-				$uniqueValues = array_merge($uniqueValues, getCandidateList($value));
+				$uniqueValues = array_merge($uniqueValues, $this->getCandidateList($value));
 			} elseif (!in_array($value, $uniqueValues)) {
 				// If the element is not already in the unique values array, add it
 				$uniqueValues[] = $value;
@@ -496,3 +496,4 @@ class RankedChoiceVote {
 		}
 	}
 }
+

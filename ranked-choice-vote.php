@@ -83,7 +83,7 @@ class RankedChoiceVote {
 	// function for outputting a list of all of the candidates
 	// return: array
 	// arguments: array
-	public function ateList(array $array): array{
+	public function getCandidateList(array $array): array{
 		$uniqueValues = array();
 		foreach ($array as $value) {
 			if (is_array($value)) {
@@ -95,6 +95,26 @@ class RankedChoiceVote {
 			}
 		}
 		return $uniqueValues;
+	}
+	
+	// function to count first-choice votes
+	// return: array
+	// arguments: array
+	private function countFirstChoices(array $array): array {
+		$votecount = [];
+		$firstColumn = $this->getFirstItemInEachDimension($array);
+
+		foreach ($firstColumn as $candidate) {
+			if (!isset($votecount[$candidate])) {
+				$votecount[$candidate] = 1;
+			} else {
+				$votecount[$candidate]++;
+			}
+		}
+
+		// sort by votes, highest first
+		arsort($votecount);
+		return $votecount;
 	}
 	
 	// function to remove spoiled ballots
@@ -147,24 +167,14 @@ class RankedChoiceVote {
 	// return: string
 	// arguments: array (2-dimensional), string
 	private function getCandidateWithFewest(array $array, string $skip): string{
-		$votecount = array();
-		$firstColumn = $this->getFirstItemInEachDimension($array);
-		foreach ($firstColumn as $candidate) {
-			if(!array_key_exists($candidate,$votecount))
-			{
-				$votecount[$candidate] = 1;
-			}
-			else{
-				$votecount[$candidate]++;
-			}
-		}
-		asort($votecount);
-		echo $this->printTally($votecount);
-		$votecount = array_reverse($votecount);
-		$fewest = array_key_last($votecount);
-		if($fewest == $skip){ // if candidate cannot be removed, get next lowest
+		$votecount = $this->countFirstChoices($array); // descending
+		$fewest = array_key_last($votecount); // since descending, this is the fewest
+
+		if ($fewest === $skip) {
 			$fewest = $this->getKeyOfSecondToLastItem($votecount);
 		}
+
+		$this->printTally($votecount);
 		return $fewest;
 	}
 	
@@ -172,40 +182,15 @@ class RankedChoiceVote {
 	// return: string
 	// arguments: array (2-dimensional)
 	private function getCandidateWithMost(array $array): string{
-		$votecount = array();
-		$firstColumn = $this->getFirstItemInEachDimension($array);
-		foreach ($firstColumn as $candidate) {
-			if(!array_key_exists($candidate,$votecount))
-			{
-				$votecount[$candidate] = 1;
-			}
-			else{
-				$votecount[$candidate]++;
-			}
-		}
-		asort($votecount);
-		$votecount = array_reverse($votecount);
-		$most = array_key_first($votecount);
-		return $most;
+		$votecount = $this->countFirstChoices($array);
+		return array_key_first($votecount); // since descending, this is the most
 	}
 	
 	// function to see if there are two candidates running in this round
 	// return: int
 	// arguments: array (2-dimensional)
 	private function getNumOfCandidatesInRound(array $array): int{
-		$votecount = array();
-		$firstColumn = $this->getFirstItemInEachDimension($array);
-		foreach ($firstColumn as $candidate) {
-			if(!array_key_exists($candidate,$votecount))
-			{
-				$votecount[$candidate] = 1;
-			}
-			else{
-				$votecount[$candidate]++;
-			}
-		}
-		$numOfCandidates = sizeof($votecount);
-		return $numOfCandidates;
+		return count($this->countFirstChoices($array));
 	}
 	
 	// if there is a candidate that cannot be removed, get the candidate with the second-fewest number of votes
@@ -225,7 +210,6 @@ class RankedChoiceVote {
 	// return: void
 	// arguments: array (1-dimensional)
 	private function printTally(array $array): void{
-		$array = array_reverse($array);
 		foreach($array as $key => $value) {
 			echo $key . ": " . $value . " votes<br />\r\n";
 		}
@@ -302,24 +286,9 @@ class RankedChoiceVote {
 	// return: string
 	// arguments: array (2-dimensional)
 	private function finalCandidatesRound(array $array): string{
-		$votecount = array();
-		$firstColumn = $this->getFirstItemInEachDimension($array);
-		foreach ($firstColumn as $candidate) {
-			if(!array_key_exists($candidate,$votecount))
-			{
-				$votecount[$candidate] = 1;
-			}
-			else{
-				$votecount[$candidate]++;
-			}
-		}
-		asort($votecount);
-		$votecount = array_reverse($votecount);
-		foreach ($votecount as $key => $value) {
-			echo $key . ": " . $value . " votes<br />\r\n";
-		}
-		$fewest = array_key_last($votecount);
-		return $fewest;
+		$votecount = $this->countFirstChoices($array);
+		$this->printTally($votecount);
+		return array_key_last($votecount); // fewest (loser)
 	}
 	
 	// function for determining who got the fewest votes and removing them from all ballots; if only two are competing in the round, remove the lowest
@@ -360,75 +329,34 @@ class RankedChoiceVote {
 	// return: array
 	// arguments: array (2-dimensional)
 	private function seeIfTopVoteGetterIsOverWinNum(array $array): array{
-		$returnArray = array();
-		$votecount = array();
-		$firstColumn = $this->getFirstItemInEachDimension($array);
-		foreach ($firstColumn as $candidate) {
-			if(!array_key_exists($candidate,$votecount))
-			{
-				$votecount[$candidate] = 1;
-			}
-			else{
-				$votecount[$candidate]++;
+		$winners = [];
+    $votecount = $this->countFirstChoices($array);
+
+    foreach ($votecount as $candidate => $votes) {
+        if ($votes >= $this->getWinNumber()) {
+				$winners[] = $candidate;
 			}
 		}
-		asort($votecount);
-		$votecount = array_reverse($votecount);
-		$voteCountOutput = "";
-		foreach ($votecount as $key => $value) {
-			$voteCountOutput .= $key . ": " . $value . " votes<br />\r\n";
-			if($value >= $this->getWinNumber())
-			{
-				array_push($returnArray,$key);
-			}
+
+		if (!empty($winners)) {
+			$this->printTally($votecount);
 		}
-		if(sizeof($returnArray)>0){
-			echo $voteCountOutput;
-		}
-		return $returnArray;
+
+		return $winners;
 	}
 	
 	// function to handle the situation where, in the end, the protected candidate is in last place
 	// return: bool
 	// arguments: array
 	private function protectedCandidateInLastAtEnd(array $array): bool {
-	
-		// Only use this function in the edge case since it happens only when there are 2 or more winners
-		if(($this->numOfCandidatesLeft() == $this->getNumberOfSpotsToFill()+1) && $this->numofWinners > 1)
-		{
-			// do a dummy round and see who came in last
-			$votecount = array();
-			$firstColumn = $this->getFirstItemInEachDimension($array);
-			foreach ($firstColumn as $candidate) {
-				if(!array_key_exists($candidate,$votecount))
-				{
-					$votecount[$candidate] = 1;
-				}
-				else{
-					$votecount[$candidate]++;
-				}
-			}
-			asort($votecount);
-			$votecount = array_reverse($votecount);
-			
-			foreach ($votecount as $key => $value) {
-				echo $key . ": " . $value . " votes<br />\r\n";
-			}
-			
+		if (($this->numOfCandidatesLeft() == $this->getNumberOfSpotsToFill() + 1) && $this->numofWinners > 1) {
+			$votecount = $this->countFirstChoices($array);
+			$this->printTally($votecount);
+
 			$fewest = array_key_last($votecount);
-			
-			// the protected candidate is the one in last, that's the one to remove
-			if($fewest == $this->protected_candidate)
-			{
-				return true;
-			}
-			else{
-				return false;
-			}
+			return $fewest === $this->protected_candidate;
 		}
-		else{
-			return false;
-		}
+		return false;
 	}
 	
 	// function for conducting the election
@@ -496,4 +424,3 @@ class RankedChoiceVote {
 		}
 	}
 }
-

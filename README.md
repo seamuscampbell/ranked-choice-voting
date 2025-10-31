@@ -1,6 +1,6 @@
 # Ranked Choice Voting #
 
-The issue with proprietary ranked choice voting systems is that there is no way for them to keep a "no endorsement" as a candidate from round to round, as many organizations require. This program allows you to designate a candidate who cannot be eliminated (e.g. "no endorsement"). The methodology used is that of a modified Single Transferrable Vote (STV)."
+The issue with proprietary ranked choice voting systems is that there is no way for them to keep a "no endorsement" as a candidate from round to round, as many organizations require. This program allows you to designate a candidate who cannot be eliminated (e.g. "no endorsement"). The methodology used is that of a modified Single Transferrable Vote (STV).
 
 ## Algorithm ##
 - Put all candidates into a 2-dimensional array with the first dimension being the individual ballot and the second dimension being the order

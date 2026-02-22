@@ -215,6 +215,62 @@ class RankedChoiceVote {
 		}
 	}
 	
+	// function for seeing how many candidates there are
+	// return: array (1-dimensional)
+	// arguments: array (2-dimensional)
+	public function listOfCandidates(array $votes): array{
+		$unique = [];
+		foreach ($votes as $row) {
+			foreach ($row as $candidate) {
+				// Using the candidate as a key guarantees uniqueness
+				$unique[$candidate] = true;
+			}
+		}
+		return array_keys($unique);
+	}
+	
+	// function to determine the top vote getter in the round
+	// return: string
+	// arguments: array (2-dimensional)
+	private function getTopVoteGetter(array $votes): string{
+		$tally = [];
+		foreach ($votes as $ballot) {
+			if (empty($ballot)) {
+				continue; // skip empty ballots
+			}
+			$candidate = $ballot[0];
+			if (!isset($tally[$candidate])) {
+				$tally[$candidate] = 0;
+			}
+			$tally[$candidate]++;
+		}
+		if (empty($tally)) {
+			return null;
+		}
+		arsort($tally); // highest votes first
+		return array_key_first($tally);
+	}
+	
+	// function to determine number of candidates in the race/round
+	// return: int
+	// arguments: array (1-dimensional)
+	public function numofCandidates(array $votes): int{
+		$candidates = $this->listOfCandidates($votes);
+		return sizeof($candidates);
+	}
+	
+	// function to help determine what to do if the number of candidates in a multi-winner race is 1 more than max (that one being the protected candidate)
+	// return: bool
+	// arguments: array (2-dimensional)
+	public function oneCandidateMoreThanMax(array $votes): bool{
+		if($this->numofCandidates($votes)-1 == $this->getNumberOfSpotsToFill()){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+	
 	// function to remove the person from the entire array
 	// return: void
 	// arguments: array (2-dimensional), string
@@ -337,17 +393,15 @@ class RankedChoiceVote {
 				$winners[] = $candidate;
 			}
 		}
-
 		if (!empty($winners)) {
 			$this->printTally($votecount);
 		}
-
 		return $winners;
 	}
 	
 	// function to handle the situation where, in the end, the protected candidate is in last place
 	// return: bool
-	// arguments: array
+	// arguments: array (2-dimensional)
 	private function protectedCandidateInLastAtEnd(array $array): bool {
 		if (($this->numOfCandidatesLeft() == $this->getNumberOfSpotsToFill() + 1) && $this->numofWinners > 1) {
 			$votecount = $this->countFirstChoices($array);
@@ -359,6 +413,14 @@ class RankedChoiceVote {
 		return false;
 	}
 	
+	// function to to print talies
+	// return: void
+	// arguments: array (2-dimensional)
+	private function printRound(array $array): void {
+		$votecount = $this->countFirstChoices($array); // descending
+		$this->printTally($votecount);
+	}
+	
 	// function for conducting the election
 	// return: void
 	// arguments: none
@@ -366,6 +428,7 @@ class RankedChoiceVote {
 		echo "<h2>" . $this->electionName . "</h2>\r\n";
 		echo "<h2>Number of winners: " . $this->getNumOfWinners() . "</h2>\r\n";
 		echo "<h2>Win Number: " . $this->getWinNumber() . "</h2>\r\n\r\n";
+		
 		while($this->getNumberOfSpotsToFill()>0)
 		{
 			echo "<h3>Round ". $this->rounds."</h3>\r\n";
@@ -381,6 +444,16 @@ class RankedChoiceVote {
 					echo $candidateOverThreshold[$i] . " has passed the threshold of ". $this->getWinNumber() . " votes and will be removed from contention<br />\r\n";
 					echo "Spots remaining: " . $this->getNumberOfSpotsToFill() . "<br />\r\n\r\n";
 				}
+			}
+			
+			// in edge case of where there is exactly 1 more candidate (e.g. the protected candidate) than total winners, declare top person a winner
+			elseif($this->oneCandidateMoreThanMax($this->votes)==true && sizeof($candidateOverThreshold)==0){
+				$topVote = $this->getTopVoteGetter($this->votes);
+				$this->printRound($this->votes);
+				$this->addWinner($topVote);
+				$this->removeCandidate($this->votes,$topVote);
+				$this->reduceNumberOfRemainingSpotsByOne();
+				echo $topVote . " received the most votes and will be removed from contention<br />\r\n\r\n";
 			}
 			
 			// handle special case where the protected candidate is in last
